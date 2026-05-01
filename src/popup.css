@@ -1,0 +1,204 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 360px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  color: #222;
+  background: #f9f9f9;
+}
+
+header {
+  background: #0167EE;
+  color: white;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.section {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
+  background: white;
+}
+
+.section-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #444;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+button {
+  padding: 7px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background: #0167EE;
+  color: white;
+  flex: 1;
+}
+
+.btn-primary:hover { background: #0052cc; }
+.btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+
+.btn-secondary {
+  background: #e8e8e8;
+  color: #333;
+}
+
+.btn-secondary:hover { background: #d5d5d5; }
+
+input[type="file"] { display: none; }
+
+#food-list {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.food-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 2px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.food-item:last-child { border-bottom: none; }
+
+.food-item label {
+  flex: 1;
+  cursor: pointer;
+}
+
+.food-meta {
+  color: #888;
+  font-size: 11px;
+}
+
+#status {
+  padding: 10px 16px;
+  font-size: 12px;
+  color: #555;
+  min-height: 36px;
+  background: #f0f4ff;
+}
+
+.meal-select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  background: white;
+}
+
+#meal-row {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+#select-controls {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+#select-controls button {
+  font-size: 11px;
+  padding: 4px 8px;
+  background: #eee;
+  color: #444;
+}
+
+.empty-state {
+  color: #aaa;
+  text-align: center;
+  padding: 20px 0;
+  font-size: 12px;
+}
+
+.stat-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.stat-added    { background: #dbeafe; color: #1d4ed8; }
+.stat-duplicate { background: #fef9c3; color: #92400e; }
+.stat-skipped  { background: #f3f4f6; color: #6b7280; }
+.stat-failed   { background: #fee2e2; color: #b91c1c; }
+
+.source-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.source-label {
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.source-input {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.source-input:focus {
+  outline: none;
+  border-color: #0167EE;
+  box-shadow: 0 0 0 2px rgba(1, 103, 238, 0.15);
+}
+
+.diary-toggle {
+  margin-bottom: 4px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #333;
+}
+
+.toggle-label input[type="checkbox"] {
+  display: inline;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #0167EE;
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UH Food Logger</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+<header>UH Food Logger</header>
+
+<div class="section">
+  <div class="section-title">Import Foods</div>
+  <div class="row">
+    <button class="btn-secondary" id="btn-template">Download Template</button>
+    <button class="btn-primary" id="btn-import" style="flex:1">Import CSV</button>
+    <input type="file" id="csv-input" accept=".csv" />
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Foods to Upload</div>
+
+  <div class="source-row">
+    <label class="source-label" for="source-input">Source</label>
+    <input type="text" id="source-input" class="source-input" value="Dining Hall" placeholder="e.g. Dining Hall" autocomplete="off" />
+  </div>
+
+  <div class="diary-toggle">
+    <label class="toggle-label">
+      <input type="checkbox" id="public-checkbox" />
+      Make foods public
+    </label>
+  </div>
+
+  <div class="diary-toggle">
+    <label class="toggle-label">
+      <input type="checkbox" id="diary-checkbox" />
+      Also log to diary
+    </label>
+  </div>
+
+  <div id="meal-row" style="display:none">
+    <select class="meal-select" id="meal-select">
+      <option value="">Loading meals...</option>
+    </select>
+  </div>
+
+  <div id="select-controls" style="display:none">
+    <button id="btn-select-all">Select All</button>
+    <button id="btn-deselect-all">Deselect All</button>
+  </div>
+
+  <div id="food-list">
+    <div class="empty-state">Import a CSV to see foods here.</div>
+  </div>
+</div>
+
+<div class="section">
+  <button class="btn-primary" id="btn-log" style="width:100%" disabled>Upload Selected Foods to MFP</button>
+</div>
+
+<div id="status">Ready. Import a CSV to get started.</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
