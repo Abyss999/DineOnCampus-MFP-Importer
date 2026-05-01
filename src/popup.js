@@ -3,8 +3,175 @@ const TEMPLATE_EXAMPLE =
   "\nChicken Breast,3 oz,140,26,0,3,0" +
   "\nBrown Rice,1/2 cup,110,3,23,1,0";
 
+const DEFAULT_API_URL = "http://localhost:5001";
+
 let foods = [];
 let mealNamesLoaded = false;
+let schoolsData = null;
+
+// — settings panel —
+
+document.getElementById("btn-settings").addEventListener("click", () => {
+  const panel = document.getElementById("settings-panel");
+  panel.style.display = panel.style.display === "none" ? "block" : "none";
+});
+
+chrome.storage.local.get(
+  [
+    "pref_source", "pref_diary", "pref_public", "pref_college_mode",
+    "pref_dining_school", "pref_dining_hall", "pref_dining_meal",
+  ],
+  (data) => {
+    if (data.pref_source) document.getElementById("source-input").value = data.pref_source;
+    if (data.pref_public) document.getElementById("public-checkbox").checked = true;
+    if (data.pref_diary) {
+      document.getElementById("diary-checkbox").checked = true;
+      document.getElementById("diary-checkbox").dispatchEvent(new Event("change"));
+    }
+
+    const collegeMode = !!data.pref_college_mode;
+    document.getElementById("college-mode-checkbox").checked = collegeMode;
+
+    if (data.pref_dining_meal) {
+      document.getElementById("meal-select-dining").value = data.pref_dining_meal;
+    }
+
+    if (collegeMode) {
+      document.getElementById("dining-section").style.display = "block";
+      loadSchools(data.pref_dining_school, data.pref_dining_hall);
+    }
+  }
+);
+
+document.getElementById("college-mode-checkbox").addEventListener("change", (e) => {
+  const on = e.target.checked;
+  chrome.storage.local.set({ pref_college_mode: on });
+  document.getElementById("dining-section").style.display = on ? "block" : "none";
+  if (on && !schoolsData) loadSchools();
+});
+
+document.getElementById("school-select").addEventListener("change", (e) => {
+  chrome.storage.local.set({ pref_dining_school: e.target.value });
+  populateHalls(e.target.value);
+});
+
+document.getElementById("hall-select").addEventListener("change", (e) => {
+  chrome.storage.local.set({ pref_dining_hall: e.target.value });
+});
+
+document.getElementById("meal-select-dining").addEventListener("change", (e) => {
+  chrome.storage.local.set({ pref_dining_meal: e.target.value });
+});
+
+// — dining hall API —
+
+function getApiUrl() {
+  return DEFAULT_API_URL;
+}
+
+async function loadSchools(savedSchool, savedHall) {
+  const schoolSelect = document.getElementById("school-select");
+  const hallSelect = document.getElementById("hall-select");
+  schoolSelect.innerHTML = '<option value="">Loading...</option>';
+  hallSelect.innerHTML = '<option value="">—</option>';
+
+  try {
+    const res = await fetch(`${getApiUrl()}/api/schools`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    schoolsData = await res.json();
+  } catch {
+    schoolSelect.innerHTML = '<option value="">API unavailable</option>';
+    setStatus("Could not reach dining API. Is the backend running?");
+    return;
+  }
+
+  if (!schoolsData.length) {
+    schoolSelect.innerHTML = '<option value="">No schools found</option>';
+    return;
+  }
+
+  schoolSelect.innerHTML = schoolsData
+    .map((s) => `<option value="${s.key}">${s.name}</option>`)
+    .join("");
+
+  const activeSchool = savedSchool && schoolsData.find((s) => s.key === savedSchool)
+    ? savedSchool
+    : schoolsData[0].key;
+  schoolSelect.value = activeSchool;
+
+  populateHalls(activeSchool, savedHall);
+}
+
+function populateHalls(schoolKey, savedHall) {
+  const hallSelect = document.getElementById("hall-select");
+  const school = schoolsData && schoolsData.find((s) => s.key === schoolKey);
+
+  if (!school || !school.halls.length) {
+    hallSelect.innerHTML = '<option value="">No halls</option>';
+    return;
+  }
+
+  hallSelect.innerHTML = school.halls
+    .map((h) => `<option value="${h.short_key}">${h.short_key}</option>`)
+    .join("");
+
+  if (savedHall && school.halls.find((h) => h.short_key === savedHall)) {
+    hallSelect.value = savedHall;
+  }
+}
+
+document.getElementById("btn-fetch-menu").addEventListener("click", async () => {
+  const school = document.getElementById("school-select").value;
+  const hall = document.getElementById("hall-select").value;
+  const meal = document.getElementById("meal-select-dining").value;
+  const date = new Date().toISOString().split("T")[0];
+  const fetchBtn = document.getElementById("btn-fetch-menu");
+
+  if (!school || !hall) {
+    setStatus("Select a school and hall first.");
+    return;
+  }
+
+  fetchBtn.disabled = true;
+  setStatus(`Fetching ${meal} menu from ${school} — ${hall}...`);
+
+  try {
+    const url = `${getApiUrl()}/api/menu?school=${school}&hall=${hall}&meal=${meal}&date=${date}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    const items = await res.json();
+
+    if (!items.length) {
+      setStatus("No menu items found for that selection.");
+      fetchBtn.disabled = false;
+      return;
+    }
+
+    foods = items.map((item) => ({
+      name: item.name,
+      serving_size: item.serving_size || "serving",
+      calories: item.calories || 0,
+      protein: item.protein || 0,
+      carbs: item.carbs || 0,
+      fats: item.fats || 0,
+      sugar: item.sugar || 0,
+    }));
+
+    renderFoodList(foods);
+    setStatus(`Loaded ${foods.length} item(s) from ${school} ${hall} (${meal}).`);
+  } catch (err) {
+    const scraperCrash = /Page\.|browser|Target page|playwright|locator|selector/i.test(err.message);
+    setStatus(scraperCrash
+      ? "No menu available — the dining hall may be closed or not serving at this time."
+      : "Error fetching menu: " + err.message
+    );
+  }
+
+  fetchBtn.disabled = false;
+});
 
 // cache helpers 
 
@@ -24,17 +191,6 @@ function saveToCache(names, source) {
     chrome.storage.local.set({ food_cache: cache });
   });
 }
-
-// source + dairy preference 
-
-chrome.storage.local.get(["pref_source", "pref_diary", "pref_public"], (data) => {
-  if (data.pref_source) document.getElementById("source-input").value = data.pref_source;
-  if (data.pref_public) document.getElementById("public-checkbox").checked = true;
-  if (data.pref_diary) {
-    document.getElementById("diary-checkbox").checked = true;
-    document.getElementById("diary-checkbox").dispatchEvent(new Event("change"));
-  }
-});
 
 document.getElementById("source-input").addEventListener("input", (e) => {
   chrome.storage.local.set({ pref_source: e.target.value });

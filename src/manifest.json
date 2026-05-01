@@ -1,12 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "UH Food Logger",
+  "name": "Campus Food Logger",
   "version": "1.0",
   "description": "Add UH dining hall foods to MyFitnessPal from CSV or Dine on Campus",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://www.myfitnesspal.com/*",
-    "https://api.dineoncampus.com/*"
+    "https://api.dineoncampus.com/*",
+    "http://localhost/*",
+    "http://localhost:5000/*"
   ],
   "action": {
     "default_popup": "popup.html",

@@ -2,12 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>UH Food Logger</title>
+  <title>Campus Food Logger</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
 
-<header>UH Food Logger</header>
+<header>
+  <span>Campus Food Logger</span>
+  <button id="btn-settings" title="Settings">&#9881;</button>
+</header>
+
+<div class="section settings-panel" id="settings-panel" style="display:none">
+  <div class="section-title">&#9881; Settings</div>
+  <div class="diary-toggle">
+    <label class="toggle-label">
+      <input type="checkbox" id="college-mode-checkbox" />
+      College Mode (Dining Hall API)
+    </label>
+  </div>
+</div>
+
+<div class="section" id="dining-section" style="display:none">
+  <div class="section-title">Dining Hall</div>
+  <div class="dining-row">
+    <label class="source-label">School</label>
+    <select id="school-select" class="meal-select">
+      <option value="">Loading...</option>
+    </select>
+  </div>
+  <div class="dining-row">
+    <label class="source-label">Hall</label>
+    <select id="hall-select" class="meal-select">
+      <option value="">—</option>
+    </select>
+  </div>
+  <div class="dining-row">
+    <label class="source-label">Meal</label>
+    <select id="meal-select-dining" class="meal-select">
+      <option value="breakfast">Breakfast</option>
+      <option value="lunch" selected>Lunch</option>
+      <option value="dinner">Dinner</option>
+      <option value="everyday">All Day</option>
+    </select>
+  </div>
+  <button class="btn-primary" id="btn-fetch-menu" style="width:100%;margin-top:8px">Fetch Menu</button>
+</div>
 
 <div class="section">
   <div class="section-title">Import Foods</div>
@@ -26,17 +65,14 @@
     <input type="text" id="source-input" class="source-input" value="Dining Hall" placeholder="e.g. Dining Hall" autocomplete="off" />
   </div>
 
-  <div class="diary-toggle">
+  <div class="toggle-row">
     <label class="toggle-label">
       <input type="checkbox" id="public-checkbox" />
-      Make foods public
+      Make public
     </label>
-  </div>
-
-  <div class="diary-toggle">
     <label class="toggle-label">
       <input type="checkbox" id="diary-checkbox" />
-      Also log to diary
+      Log to diary
     </label>
   </div>
 
@@ -52,7 +88,7 @@
   </div>
 
   <div id="food-list">
-    <div class="empty-state">Import a CSV to see foods here.</div>
+    <div class="empty-state">Import a CSV or fetch from Dining Hall to see foods here.</div>
   </div>
 </div>
 
