@@ -166,6 +166,7 @@ async function getUserId() {
 }
 
 async function createFood(food, userId, csrfToken, source = "Dining Hall", makePublic = false) {
+  const servingSize = parseServingSize(food.serving_size);
   const body = {
     item: {
       user_id: userId,
@@ -180,8 +181,8 @@ async function createFood(food, userId, csrfToken, source = "Dining Hall", makeP
       },
       serving_sizes: [
         {
-          value: 1,
-          unit: /^(n\/a|na|-|)$/i.test((food.serving_size || "").trim()) ? "serving" : food.serving_size,
+          value: servingSize.value,
+          unit: servingSize.unit,
           nutrition_multiplier: 1,
         },
       ],
@@ -210,4 +211,78 @@ async function createFood(food, userId, csrfToken, source = "Dining Hall", makeP
   }
 
   return response.json();
+}
+
+function parseServingSize(rawServingSize) {
+  const normalized = (rawServingSize || "").trim().toLowerCase();
+
+  if (!normalized || /^(n\/a|na|-)$/.test(normalized)) {
+    return { value: 1, unit: "serving" };
+  }
+
+  const match = normalized.match(
+    /^(?<quantity>(?:\d+\s+\d+\/\d+)|(?:\d+\/\d+)|(?:\d+(?:\.\d+)?))(?:\s+)?(?<unit>.*)$/
+  );
+
+  if (!match) {
+    return { value: 1, unit: normalizeServingUnit(normalized) };
+  }
+
+  const quantityText = match.groups.quantity;
+  const unitText = (match.groups.unit || "").trim();
+  const quantity = parseServingQuantity(quantityText);
+
+  return {
+    value: Number.isFinite(quantity) ? quantity : 1,
+    unit: normalizeServingUnit(unitText || normalized.replace(quantityText, "").trim()) || "serving",
+  };
+}
+
+function parseServingQuantity(quantityText) {
+  const mixedMatch = quantityText.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if (mixedMatch) {
+    const whole = Number(mixedMatch[1]);
+    const numerator = Number(mixedMatch[2]);
+    const denominator = Number(mixedMatch[3]);
+    return whole + numerator / denominator;
+  }
+
+  const fractionMatch = quantityText.match(/^(\d+)\/(\d+)$/);
+  if (fractionMatch) {
+    const numerator = Number(fractionMatch[1]);
+    const denominator = Number(fractionMatch[2]);
+    return numerator / denominator;
+  }
+
+  return Number(quantityText);
+}
+
+function normalizeServingUnit(unitText) {
+  const unit = (unitText || "").trim();
+  if (!unit) return "serving";
+
+  const aliases = {
+    ounce: "oz",
+    ounces: "oz",
+    oz: "oz",
+    cup: "cup",
+    cups: "cup",
+    tbsp: "tbsp",
+    tablespoon: "tbsp",
+    tablespoons: "tbsp",
+    tsp: "tsp",
+    teaspoon: "tsp",
+    teaspoons: "tsp",
+    gram: "g",
+    grams: "g",
+    g: "g",
+    pound: "lb",
+    pounds: "lb",
+    lb: "lb",
+    lbs: "lb",
+    serving: "serving",
+    servings: "serving",
+  };
+
+  return aliases[unit] || unit;
 }
